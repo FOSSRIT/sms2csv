@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect
+from flask import Flask, request
 import os
 app = Flask(__name__)
 
@@ -11,16 +11,12 @@ def smsResponse():
 @app.route("/incoming", methods=['GET', 'POST'])
 def receiveResponse():
     data_dir = os.environ.get("OPENSHIFT_DATA_DIR", '.')
-    with open(os.path.join(data_dir, 'tempfile'), 'a') as log:
-
-        body = request.args.get('body')
-        if not body:
-            body = request.args.keys()
-        if not body:
-            body = request.args
-        if not body:
-            "Well I don't know then"
-        log.write(str(body))
+    body = request.args.get('Body')
+    from_number = request.args.get('From')
+    if not body or from_number:
+        return "Please don't go here manually."
+    with open(os.path.join(data_dir, from_number), 'a') as log:
+        log.write(str(body) + '\n')
     return str(body)
 
 if __name__ == "__main__":
